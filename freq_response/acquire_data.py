@@ -93,48 +93,17 @@ for i in range(len(freq_array)):
     sig_gen.set_am(0)     # turns oFF amplitude modulation
     sig_gen.set_rf(freq_array[i], 7.9) # sets RF signal frequency and level
 
-    #time.sleep(1)
-
-    #vna.set_data_format("SLOG")
-    #vna.write("SENS1:CORR:STAT 1")
-    #vna.freq_range(5e6,750e6)
-
     file_name = 'data/file'
-
-    #vna.save_csv("SLOG_s11")
-    #vna.save_s1p("S","dB", file_name)
-
-    #ntwk = rf.Network(file_name + '.s1p')
-
-    #ntwk.plot_s_smith()
-    #pyplot.savefig(file_name + '.png')
-
-    #pyplot.close()
-    #ntwk.plot_s_complex()
-    #pyplot.savefig('complex.png')
-
-    #pyplot.close()
-    #ntwk.plot_s_db()
-    #pyplot.savefig(file_name + '.png')
 
     ##################################################################
     # get raw points for s21 calculation
 
-    #num_samples = coher_samp(freq_array[i],fs,4000,30000)
-
     time_array = numpy.array(range(num_samples))*1/fs # time array
 
-
     bpm.config_acq(num_samples, 0, 1, 'adc', 'now')
-    # epics.caput(afc_idn + ':ACQ:samplesPre', num_samples) # number of samples
-    # epics.caput(afc_idn + ':ACQ:samplesPost', 0)
-    # epics.caput(afc_idn + ':ACQ:shots', 1) # number of shots taken
-    # epics.caput(afc_idn + ':ACQ:channel', 'adc') # adc/fofb/tbt
-    # epics.caput(afc_idn + ':ACQ:trigger', 'now')
 
     time.sleep(2)
 
-    # data_array = epics.caget(afc_idn + ':ADC_C:ArrayData')[:num_samples] # get only "num_samples" samples
     data_array = bpm.get_arraydata('C', num_samples)
 
     # checks if directory exists. If not, create it.
@@ -152,10 +121,13 @@ for i in range(len(freq_array)):
     epics.caput(sig_ana_idn + ":FREQ:Span", 1e4)
     epics.caput(sig_ana_idn + ":FREQ:Center", freq_array[i])
     epics.caput(sig_ana_idn + ":GENERAL:SweMode", 0)
-    #epics.caput(sig_ana_idn + ":GENERAL:AutoAll", 1)
+
     time.sleep(1)
+
     epics.caput(sig_ana_idn + ":MARK:FindMax", 1)
+
     time.sleep(1)
+
     power_array.append(epics.caget(sig_ana_idn + ":MARK:Y_RBV"))
 
     print("... done!\n")

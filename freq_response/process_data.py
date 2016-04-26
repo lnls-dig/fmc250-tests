@@ -17,13 +17,6 @@ import skrf as rf
 from functions.fourierseries import fourierseries
 
 ######################################################################
-# Importing local libraries #
-
-
-#from instr_tests.instruments.vna.agilent_e5061b import AgilentE5061B, RSSMB100A
-#from instr_tests.functions.vna.mag_lvl_test import mag_lvl_test
-
-######################################################################
 # Test Settings
 
 num_samples = 4164
