@@ -6,13 +6,8 @@
 
 import sys
 import os
-import inspect
-import visa
 import time
-import epics
 import numpy
-
-import matplotlib.pyplot as pyplot
 
 from functions.fix_fsig import fix_fsig
 

@@ -3,7 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy
-from scipy.fftpack import fft
+
 from functions.fourierseries import fourierseries
 from functions.alias_freq import alias_freq
 

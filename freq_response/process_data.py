@@ -4,15 +4,12 @@
 # compute the power response over frequency.
 
 import sys
-import os
-import inspect
-import visa
+
 import time
-import epics
+
 import numpy
 
 import matplotlib.pyplot as pyplot
-import skrf as rf
 
 from functions.fourierseries import fourierseries
 
