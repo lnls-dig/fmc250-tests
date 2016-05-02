@@ -9,6 +9,7 @@ import os
 import time
 import numpy
 import epics
+from configparser import SafeConfigParser
 
 from functions.fix_fsig import fix_fsig
 
@@ -19,15 +20,17 @@ import instr_tests
 # Test Settings #
 #################
 
-test_num = 0
+config = SafeConfigParser()
+config.read('config.ini')
 
-afc_idn = 'SIDI-BPM-01-14'
-sig_gen_ip = '10.0.18.34'
-sig_gen_clk_ip = '10.0.18.50'
-sig_ana_idn = 'DIG-RSFSV-0'
+sig_gen_ip = config.get('IP','sig_gen_ip')
+sig_gen_clk_ip = config.get('IP','sig_gen_clk_ip')
 
-num_samples = 50000
-fs = 240e6 # sampling frequency in Hz
+afc_idn = config.get('EPICS_IDN','afc_idn')
+sig_ana_idn = config.get('EPICS_IDN','sig_ana_idn')
+
+num_samples = config.getint('Test','num_samples')
+fs = config.getfloat('Test','fs') # sampling frequency in Hz
 
 ######################################################################
 # Initiate instruments

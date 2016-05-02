@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy
+from configparser import SafeConfigParser
 
 from functions.fourierseries import fourierseries
 from functions.alias_freq import alias_freq
@@ -10,15 +11,16 @@ from functions.alias_freq import alias_freq
 #####################################################################
 # Configuring the parameters
 
-num_samples = 4164
+config = SafeConfigParser()
+config.read('config.ini')
 
-fund_power_array = []
-
-fs = 239978760
-fsig_array = []
+fs = config.getfloat('Test','fs') # sampling frequency in Hz
 
 ######################################################################
 # read power file
+
+fund_power_array = []
+fsig_array = []
 
 with open('data/power.txt','r') as fr:
     lines = fr.readlines()

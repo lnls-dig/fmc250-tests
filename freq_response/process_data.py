@@ -13,11 +13,16 @@ import matplotlib.pyplot as pyplot
 
 from functions.fourierseries import fourierseries
 
+from configparser import SafeConfigParser
+
 ######################################################################
 # Test Settings
 
-num_samples = 4164
-fs = 239978760 # sampling frequency in Hz
+config = SafeConfigParser()
+config.read('config.ini')
+
+num_samples = config.getint('Test','num_samples')
+fs = config.getfloat('Test','fs') # sampling frequency in Hz
 
 
 sys.stdout.write("\nRunning test...\n\n")
