@@ -75,9 +75,7 @@ with open('freq.txt','r') as fr:
     freq_array = fr.readlines()
 
 # convert to float
-
-for i in range(len(freq_array)):
-    freq_array[i] = float(freq_array[i])
+freq_array = [float(freq) for freq in freq_array]
 
 power_array = [] # initializing array that receives power of each freq
 

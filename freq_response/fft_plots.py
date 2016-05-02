@@ -31,11 +31,8 @@ for i in range(1,len(lines)):  # start from 1 to avoid header
     fund_power_array.append(temp_i[1])
 
 # convert to float
-
-for i in range(len(fsig_array)):
-    fsig_array[i] = float(fsig_array[i])
-    fund_power_array[i] = float(fund_power_array[i])
-
+fsig_array = [float(freq) for freq in fsig_array]
+fund_power_array = [float(power) for power in fund_power_array]
 
 ######################################################################
 #  Read and process files for each frequency
@@ -59,9 +56,9 @@ for i in range(len(fund_power_array)):
         data_time_array.append(temp_j[0])
         data_amp_array.append(temp_j[1])
 
-    for j in range(len(data_time_array)):
-        data_time_array[j] = float(data_time_array[j])
-        data_amp_array[j] = float(data_amp_array[j])
+    # convert to float
+    data_time_array = [float(time) for time in data_time_array]
+    data_amp_array = [float(amp) for amp in data_amp_array]
 
     ##################################################################
     # Calculate fft
