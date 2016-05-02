@@ -8,6 +8,7 @@ import sys
 import os
 import time
 import numpy
+import epics
 
 from functions.fix_fsig import fix_fsig
 
