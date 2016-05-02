@@ -102,10 +102,9 @@ for i in range(len(freq_array)):
     # checks if directory exists. If not, create it.
     os.makedirs(os.getcwd() + "/" + os.path.dirname(file_name), exist_ok=True)
 
-    with open(file_name + "_freq_"+ str(int(freq_array[i])) + '.csv','w') as fw:
-        fw.write('t, y'+'\n') # Header
-        for j in range(len(data_array)):
-            fw.write(str(time_array[j]) + ", " + str(data_array[j]) + "\n")
+    data = numpy.column_stack((time_array,data_array))
+    numpy.savetxt(file_name + "_freq_" + str(int(freq_array[i])) + '.csv',
+                  data, header = 't, counts (max 16 bits)',delimiter = ',')
 
     ##################################################################
     # Measure fundamental frequency power for the respective freq
@@ -128,9 +127,7 @@ for i in range(len(freq_array)):
 ######################################################################
 # Save the power array after the loop
 
-with open('data/power' + '.txt','w') as fw:
-    fw.write('t, y'+'\n') # Header
-    for i in range(len(power_array)):
-        fw.write(str(freq_array[i]) + ", " + str(power_array[i]) + "\n")
+data = numpy.column_stack((freq_array, power_array))
+numpy.savetxt('data/power.txt', data, delimiter = ',', header = 'Hz, dBm')
 
 print("\nok")
