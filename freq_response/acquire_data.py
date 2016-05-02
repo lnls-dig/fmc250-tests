@@ -71,11 +71,7 @@ sig_gen_clk.set_rf(fs, 7.9) # set RF signal frequency and level
 time.sleep(1)
 
 # read frequency file
-with open('freq.txt','r') as fr:
-    freq_array = fr.readlines()
-
-# convert to float
-freq_array = [float(freq) for freq in freq_array]
+freq_array = numpy.loadtxt('freq.txt')
 
 power_array = [] # initializing array that receives power of each freq
 

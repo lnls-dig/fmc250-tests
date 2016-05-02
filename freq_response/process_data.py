@@ -33,42 +33,24 @@ fsig_array = []
 ######################################################################
 # read power file
 
-with open('data/power.txt','r') as fr:
-    lines = fr.readlines()
+data = numpy.loadtxt('data/power.txt', delimiter = ',', skiprows = 1)
 
-for i in range(1,len(lines)):  # start from 1 to avoid header
-    temp_i = lines[i].split(',')
-    fsig_array.append(temp_i[0])
-    fund_power_array.append(temp_i[1])
-
-# convert to float
-fsig_array = [float(freq) for freq in fsig_array]
-fund_power_array = [float(power) for power in fund_power_array]
+fsig_array = [d[0] for d in data]
+fund_power_array = [d[1] for d in data]
 
 power_array = []
 
 for i in range(len(fund_power_array)):
 
-    data_time_array = []
-    data_amp_array = []
-
     ##################################################################
     # Try to open the file
     try:
-        with open("data/file_freq_" + str(int(fsig_array[i])) + '.csv','r') as fr:
-            lines = fr.readlines()
+        data = numpy.loadtxt('data/file_freq_' + str(int(fsig_array[i])) + '.csv', delimiter = ',', skiprows = 1)
+        data_time_array = [d[0] for d in data]
+        data_amp_array = [d[1] for d in data]
     except:
         print("file_freq_" + str((fsig_array[i]))+ " not found...")
         exit()
-
-    for j in range(1,len(lines)): # start from 1 to avoid header
-        temp_j = lines[j].split(',')
-        data_time_array.append(temp_j[0])
-        data_amp_array.append(temp_j[1])
-
-    # convert to float
-    data_time_array = [float(time) for time in data_time_array]
-    data_amp_array = [float(amp) for amp in data_amp_array]
 
     ##################################################################
     # Calculate fft
