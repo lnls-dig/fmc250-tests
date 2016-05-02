@@ -121,7 +121,7 @@ for i in range(len(freq_array)):
 
     epics.caput(sig_ana_idn + ":MARK:FindMax", 1)
 
-    time.sleep(1)
+    time.sleep(2)
 
     power_array.append(epics.caget(sig_ana_idn + ":MARK:Y_RBV"))
 
