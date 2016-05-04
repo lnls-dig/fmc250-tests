@@ -19,26 +19,26 @@ import instr_tests
 ######################################################################
 # Functions
 
-def init_instruments(**kwargs):
+def init_instruments(sig_gen_config, sig_gen_clk_config, bpm_config):
     # arguments are in a dictionary of lists, containing the ip/idn on
     # the first element and the protocol in the second element
 
-    if kwargs.get('sig_gen')[1] == 'visa':
-        sig_gen = instr_tests.instruments.signal_generator.RSSMX100A_visa(kwargs.get('sig_gen')[0])
-    elif kwargs.get('sig_gen')[1] == 'epics':
-        sig_gen = instr_tests.instruments.signal_generator.RSSMX100A_epics(kwargs.get('sig_gen')[0])
+    if sig_gen_config[1] == 'visa':
+        sig_gen = instr_tests.instruments.signal_generator.RSSMX100A_visa(sig_gen_config[0])
+    elif sig_gen_config[1] == 'epics':
+        sig_gen = instr_tests.instruments.signal_generator.RSSMX100A_epics(sig_gen_config[0])
 
 
-    if kwargs.get('sig_gen_clk')[1] == 'visa':
-        sig_gen_clk = instr_tests.instruments.signal_generator.RSSMX100A_visa(kwargs.get('sig_gen_clk')[0])
-    elif kwargs.get('sig_gen_clk')[1] == 'epics':
-        sig_gen_clk = instr_tests.instruments.signal_generator.RSSMX100A_epics(kwargs.get('sig_gen_clk')[0])
+    if sig_gen_clk_config[1] == 'visa':
+        sig_gen_clk = instr_tests.instruments.signal_generator.RSSMX100A_visa(sig_gen_clk_config[0])
+    elif sig_gen_clk_config[1] == 'epics':
+        sig_gen_clk = instr_tests.instruments.signal_generator.RSSMX100A_epics(sig_gen_clk_config[0])
 
 
-    if kwargs.get('bpm')[1] == 'visa':
+    if bpm_config[1] == 'visa':
         print("AFC in visa NOT implemented, only available by EPICS")
-    elif kwargs.get('bpm')[1] == 'epics':
-        bpm = instr_tests.instruments.bpm.AFC_v3_1_epics(kwargs.get('bpm')[0])
+    elif bpm_config[1] == 'epics':
+        bpm = instr_tests.instruments.bpm.AFC_v3_1_epics(bpm_config[0])
 
     return sig_gen, sig_gen_clk, bpm
 
@@ -100,9 +100,9 @@ file_name = config.get('Test','file_name')
 
 power_array = [] # initializing array that receives power of each freq
 
-sig_gen, sig_gen_clk, bpm = init_instruments(sig_gen = [sig_gen_ip,'visa'],
-                                             sig_gen_clk = [sig_gen_clk_ip, 'visa'],
-                                             bpm = [afc_idn,'epics'])
+sig_gen, sig_gen_clk, bpm = init_instruments(sig_gen_config = [sig_gen_ip,'visa'],
+                                             sig_gen_clk_config = [sig_gen_clk_ip, 'visa'],
+                                             bpm_config = [afc_idn,'epics'])
 
 create_data_dir(data_dir)
 
