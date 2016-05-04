@@ -54,7 +54,7 @@ def set_clk_freq(sig_gen_clk, freq):
                                 # Must small enough to not damage the
                                 # circuit and big enough to be detected
 
-    time.sleep(1)
+    time.sleep(1) # wait due to set command above
 
 def set_sig_freq(sig_gen, freq):
     # Configure instrument that generates the input signal
