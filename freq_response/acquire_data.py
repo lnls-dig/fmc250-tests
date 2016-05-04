@@ -46,24 +46,19 @@ def create_data_dir(data_dir):
     # checks if data subdirectory exists. If not, create it.
     os.makedirs(os.getcwd() + "/" + os.path.dirname(data_dir), exist_ok=True)
 
-def set_clk_freq(sig_gen_clk, freq):
+def set_clk_freq(sig_gen_clk, sig_gen_clk_level, freq):
     # Configure instrument that generates the clock
     sig_gen_clk.set_fm('OFF')
     sig_gen_clk.set_am('OFF')
-    sig_gen_clk.set_rf(freq, 4) # Level of 4 dBm was a random value.
-                                # Must small enough to not damage the
-                                # circuit and big enough to be detected
+    sig_gen_clk.set_rf(freq, sig_gen_clk_level)
 
     time.sleep(1) # wait due to set command above
 
-def set_sig_freq(sig_gen, freq):
+def set_sig_freq(sig_gen, sig_gen_level, freq):
     # Configure instrument that generates the input signal
     sig_gen.set_fm('OFF')
     sig_gen.set_am('OFF')
-    sig_gen.set_rf(freq, 7.9) # Level of 7.9 was set to deliver 5
-                              # dBm to the BPM, considering the
-                              # cable loss and impedance
-                              # mismatching
+    sig_gen.set_rf(freq, sig_gen_level)
 
 def get_sig_power(sig_ana_idn, freq):
     epics.caput(sig_ana_idn + ":GENERAL:Reset", 1)
@@ -97,6 +92,9 @@ num_samples = config.getint('Test','num_samples')
 fs = config.getfloat('Test','fs')
 data_dir = config.get('Test','data_dir')
 file_name = config.get('Test','file_name')
+sig_gen_level = config.get('Test','sig_gen_level')
+sig_gen_clk_level = config.get('Test','sig_gen_clk_level')
+bpm_channel = config.get('Test','bpm_channel')
 
 power_array = [] # initializing array that receives power of each freq
 
@@ -108,7 +106,7 @@ create_data_dir(data_dir)
 
 sys.stdout.write("\nRunning test...\n\n")
 
-set_clk_freq(sig_gen_clk, fs)
+set_clk_freq(sig_gen_clk, sig_gen_clk_level, fs)
 
 freq_array = numpy.loadtxt('freq.txt')
 
@@ -121,13 +119,13 @@ for i, freq in enumerate(freq_array):
 
     print("Starting " + str(i) +"...")
 
-    set_sig_freq(sig_gen, freq)
+    set_sig_freq(sig_gen, sig_gen_level, freq)
 
     time_array = numpy.array(range(num_samples))*1/fs # generate time array
 
     bpm.config_acq(num_samples, 0, 1, 'adc', 'now')
     time.sleep(2) # time delay to let BPM do the acquisition
-    data_array = bpm.get_arraydata('C', num_samples)
+    data_array = bpm.get_arraydata(bpm_channel, num_samples)
 
 
     data = numpy.column_stack((time_array,data_array)) # Format data into 2 columns
