@@ -84,14 +84,17 @@ def get_sig_power(sig_ana_idn, freq):
 config = SafeConfigParser()
 config.read('config.ini')
 
+data_dir = config.get('Test','data_dir')
+data_file_name = config.get('Test','data_file_name')
+freq_file_name = config.get('Test','freq_file_name')
+power_file_name = config.get('Test','power_file_name')
 sig_gen_ip = config.get('IP','sig_gen_ip')
 sig_gen_clk_ip = config.get('IP','sig_gen_clk_ip')
 afc_idn = config.get('EPICS_IDN','afc_epics_idn')
 sig_ana_idn = config.get('EPICS_IDN','sig_ana_epics_idn')
 num_samples = config.getint('Test','num_samples')
 fs = config.getfloat('Test','fs')
-data_dir = config.get('Test','data_dir')
-file_name = config.get('Test','file_name')
+adc_resolution_bits = config.getint('Test','adc_resolution_bits')
 sig_gen_level = config.get('Test','sig_gen_level')
 sig_gen_clk_level = config.get('Test','sig_gen_clk_level')
 bpm_channel = config.get('Test','bpm_channel')
@@ -108,7 +111,7 @@ sys.stdout.write("\nRunning test...\n\n")
 
 set_clk_freq(sig_gen_clk, sig_gen_clk_level, fs)
 
-freq_array = numpy.loadtxt('freq.txt')
+freq_array = numpy.loadtxt(freq_file_name)
 
 # fix input frequencies to coherent sampling, using the closes
 # coherent frequency
@@ -129,8 +132,8 @@ for i, freq in enumerate(freq_array):
 
 
     data = numpy.column_stack((time_array,data_array)) # Format data into 2 columns
-    numpy.savetxt(file_name + "_freq_" + str(int(freq)) + '.csv',
-                  data, header = 't, counts (max 16 bits)',delimiter = ',')
+    numpy.savetxt(data_dir + data_file_name + str(int(freq)) + '.csv',
+                  data, header = 't, counts (max ' + str(adc_resolution_bits) + ' bits)',delimiter = ',')
 
     # Measure fundamental frequency power for the respective freq
     sig_power = get_sig_power(sig_ana_idn, freq)
@@ -139,6 +142,6 @@ for i, freq in enumerate(freq_array):
 
 
 data = numpy.column_stack((freq_array, power_array)) # Format data into 2 columns
-numpy.savetxt('data/power.txt', data, delimiter = ',', header = 'Hz, dBm')
+numpy.savetxt(data_dir + power_file_name, data, delimiter = ',', header = 'Hz, dBm')
 
 print("\nok")
