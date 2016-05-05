@@ -37,7 +37,6 @@ def generate_plot(freq, amp, phase, f_alias):
     plt.title('FFT - Phase')
     plt.ylabel('Phase [degrees]')
     plt.xlabel('Frequency [Hz]')
-    #plt.ylim([-4, 4]) # empirical max values
     return plt
 
 #####################################################################
