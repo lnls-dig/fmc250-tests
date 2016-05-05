@@ -1,84 +1,86 @@
 #!/usr/bin/python3
 
-# Script to read and "data/power.txt" data files under "data/" and
-# compute the power response over frequency.
+# Script to compute the power response over frequency of the ADC
+# front-end using the data acquired using the "acquire_data" script.
 
 import sys
-
 import time
-
 import numpy
-
 import matplotlib.pyplot as pyplot
-
 from functions.fourierseries import fourierseries
-
 from configparser import SafeConfigParser
 
 ######################################################################
-# Test Settings
+# Functions
+
+def to_full_scale(adc_resolution_bits, amp):
+    # convert to full scale using the adc resulution
+    amp = 20*numpy.log10(amp)
+    return (amp - 20*numpy.log10(2**adc_resolution_bits-1))
+
+def fund_freq_amp(amp):
+    # find fundamental frequency amplitude
+    amp_max = numpy.amax(amp)
+    return amp_max
+
+def generate_plot(freq, power):
+    pyplot.close('all')
+    pyplot.plot(freq, power)
+    pyplot.grid('on')
+    pyplot.title('Power delivered to ADC')
+    pyplot.ylabel('Power Normalized Magnetude [dBFS]')
+    pyplot.xlabel('Sampling Frequency [Hz]')
+    return pyplot
+
+######################################################################
+# Main script
 
 config = SafeConfigParser()
 config.read('config.ini')
 
+data_dir = config.get('Test','data_dir')
+data_file_name = config.get('Test','data_file_name')
+power_file_name = config.get('Test','power_file_name')
+power_plot_name = config.get('Test','power_plot_name')
 num_samples = config.getint('Test','num_samples')
 fs = config.getfloat('Test','fs') # sampling frequency in Hz
-
+adc_resolution_bits = config.getint('Test','adc_resolution_bits')
 
 sys.stdout.write("\nRunning test...\n\n")
 
+# Initialize arrays that will receive data in each loop cycle
 fund_power_array = []
 fsig_array = []
 
-######################################################################
-# read power file
 
-data = numpy.loadtxt('data/power.txt', delimiter = ',', skiprows = 1)
-
+# Load power and frequency data
+data = numpy.loadtxt(data_dir + power_file_name, delimiter = ',', skiprows = 1)
 fsig_array = [d[0] for d in data]
 fund_power_array = [d[1] for d in data]
 
 power_array = []
 
-for i in range(len(fund_power_array)):
+for i, power in enumerate(fund_power_array):
 
-    ##################################################################
-    # Try to open the file
-    try:
-        data = numpy.loadtxt('data/file_freq_' + str(int(fsig_array[i])) + '.csv', delimiter = ',', skiprows = 1)
-        data_time_array = [d[0] for d in data]
-        data_amp_array = [d[1] for d in data]
-    except:
-        print("file_freq_" + str((fsig_array[i]))+ " not found...")
-        exit()
-
-    ##################################################################
-    # Calculate fft
+    data = numpy.loadtxt(data_dir + data_file_name + str(int(fsig_array[i])) + '.csv',
+                         delimiter = ',', skiprows = 1)
+    data_time_array = [d[0] for d in data]
+    data_amp_array = [d[1] for d in data]
 
     fft_par = fourierseries(data_amp_array, fs)
     f = fft_par[1]
-    fft = fft_par[0]
+    fft_amp = fft_par[0]
 
-    # Scaling the data
-    fft = 20*numpy.log10(fft)
-    fft = fft - 20*numpy.log10(2**16-1) # Scale to full scale (16 bits)
+    fft_amp_fs = to_full_scale(adc_resolution_bits, fft_amp)
 
-    # find fundamental freq in fft and amplitude
-    fft_max = numpy.amax(fft)
-    fft_max_f = f[numpy.argmax(fft)]
+    fft_max = fund_freq_amp(fft_amp_fs)
 
     # normalize and save power of the fundamental freq according to
     # the first sampling frequency's power
     power_array.append(fft_max+fund_power_array[0]-fund_power_array[i])
 
-######################################################################
-# Generate plot and save in a PNG file
 
-pyplot.plot(fsig_array, power_array)
-pyplot.grid('on')
-pyplot.title('Power delivered to ADC')
-pyplot.ylabel('Power Normalized Magnetude [dBFS]')
-pyplot.xlabel('Sampling Frequency [Hz]')
-pyplot.savefig('power_fs.png')
+pyplot = generate_plot(fsig_array, power_array)
+pyplot.savefig(power_plot_name)
 
 print("\nok")
