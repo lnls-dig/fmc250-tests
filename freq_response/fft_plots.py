@@ -8,82 +8,76 @@ from configparser import SafeConfigParser
 from functions.fourierseries import fourierseries
 from functions.alias_freq import alias_freq
 
-#####################################################################
-# Configuring the parameters
+def to_full_scale(adc_resolution_bits, amp):
+    amp = 20*numpy.log10(amp)
+    return (amp - 20*numpy.log10(2**adc_resolution_bits-1))
 
-config = SafeConfigParser()
-config.read('config.ini')
-
-fs = config.getfloat('Test','fs') # sampling frequency in Hz
-
-######################################################################
-# read power file
-
-data = numpy.loadtxt('data/power.txt', delimiter = ',', skiprows = 1)
-
-fsig_array = [d[0] for d in data]
-fund_power_array = [d[1] for d in data]
-
-######################################################################
-#  Read and process files for each frequency
-
-for i in range(len(fund_power_array)):
-
-    ##################################################################
-    # Try to open the file
-    try:
-        data = numpy.loadtxt('data/file_freq_' + str(int(fsig_array[i])) + '.csv', delimiter = ',', skiprows = 1)
-        data_time_array = [d[0] for d in data]
-        data_amp_array = [d[1] for d in data]
-    except:
-        print("file_freq_" + str((fsig_array[i]))+ " not found...")
-        exit()
-
-    ##################################################################
-    # Calculate fft
-
-    fft_par = fourierseries(data_amp_array, fs)
-
-    fft_amp = fft_par[0]
-    fft_f = fft_par[1]
-    fft_ph = fft_par[2]
-
-    ##################################################################
-    # Scaling the data
-    fft_amp = 20*numpy.log10(fft_amp)
-    fft_amp = fft_amp - 20*numpy.log10(2**16-1) # Scale to full scale (16 bits)
-
-
+def trim_phase(amp_threshold, phase, amp):
+    phase_trim = phase
     # zero phase if amp is smaller than a threshold
-    for idx, j in enumerate(fft_amp):
-        if j < -90:
-            fft_ph[idx] = 0
+    for idx, j in enumerate(amp):
+        if j < amp_threshold:
+            phase_trim[idx] = 0
+    return phase_trim
 
-    ##################################################################
-    # Calculating the aliased frequency
-
-    f_alias = alias_freq(fsig_array[i],fs)
-
-    ##################################################################
-    # Plotting the data
-
+def generate_plot(freq, amp, phase, f_alias):
     plt.close("all")
     ax1 = plt.subplot(211)
     plt.axvline(f_alias, color = 'r', label = "Aliased frequency")
-    plt.plot(fft_f, fft_amp)
+    plt.plot(freq, amp)
     plt.grid('on')
     plt.title('FFT - Amplitude')
     plt.ylabel('Normalized Magnetude [dBFS]')
-    #plt.xlabel('Frequency [Hz]')
     plt.legend(loc = 'best')
-    plt.ylim([-180, 0]) # empirical data
+    plt.ylim([-180, 0]) # empirical max values
 
     ax2 = plt.subplot(212)
-    plt.plot(fft_f, fft_ph)
+    plt.plot(freq, phase)
     plt.grid('on')
     plt.title('FFT - Phase')
     plt.ylabel('Phase [degrees]')
     plt.xlabel('Frequency [Hz]')
-    plt.ylim([-4, 4]) # empirical data
+    #plt.ylim([-4, 4]) # empirical max values
+    return plt
 
-    plt.savefig('data/fft_freq_' + str(int(fsig_array[i])) + '.png')
+#####################################################################
+# Main script
+
+# Init
+config = SafeConfigParser()
+config.read('config.ini')
+
+fs = config.getfloat('Test','fs') # sampling frequency in Hz
+adc_resolution_bits = config.getint('Test','adc_resolution_bits')
+amp_threshold = config.getfloat('Test','amp_threshold')
+data_dir = config.get('Test','data_dir')
+data_file_name = config.get('Test','data_file_name')
+freq_file_name = config.get('Test','freq_file_name')
+power_file_name = config.get('Test','power_file_name')
+
+# Load power and frequency data
+data = numpy.loadtxt(data_dir + power_file_name, delimiter = ',', skiprows = 1)
+fsig_array = [d[0] for d in data]
+fund_power_array = [d[1] for d in data]
+
+# Generate fourier series for each frequency and plot
+for i, power in enumerate(fund_power_array):
+
+    data = numpy.loadtxt(data_dir + data_file_name + str(int(fsig_array[i])) + '.csv',
+                         delimiter = ',', skiprows = 1)
+    data_time_array = [d[0] for d in data]
+    data_amp_array = [d[1] for d in data]
+
+    fft_par = fourierseries(data_amp_array, fs)
+    fft_amp = fft_par[0]
+    fft_f = fft_par[1]
+    fft_ph = fft_par[2]
+
+    # Adjust amplitude and frequency to plot
+    fft_amp_fs = to_full_scale(adc_resolution_bits, fft_amp)
+    fft_ph_trim = trim_phase(amp_threshold, fft_ph, fft_amp_fs)
+
+    f_alias = alias_freq(fsig_array[i],fs)
+
+    plt = generate_plot(fft_f, fft_amp_fs ,fft_ph_trim, f_alias)
+    plt.savefig(data_dir + data_file_name + str(int(fsig_array[i])) + '.png')
